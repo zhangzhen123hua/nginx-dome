@@ -1,0 +1,47 @@
+image: docker:latest
+
+variables:
+  DOCKER_IMAGE_TAG: $CI_COMMIT_REF_SLUG
+  DOCKER_IMAGE_NAME: $CI_REGISTRY
+  GIT_SUBMODULE_STRATEGY: recursive
+
+
+services:
+ - docker:dind
+
+stages:
+  - tags
+  - build
+
+before_script:
+  - export DOCKER_IMAGE_NAME=$DOCKER_IMAGE_NAME/${CI_PROJECT_PATH#*/}
+
+# 打 tag 时触发构建（git 的 tag 会直接作为 docker 镜像 tag）
+tags:
+  stage: tags
+  script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  - export DOCKER_IMAGE_TAG=$CI_COMMIT_TAG
+  - |
+    echo -e "Image Name: \033[1;35m$DOCKER_IMAGE_NAME\033[0m"
+    echo -e "Image Tag:  \033[1;35m$DOCKER_IMAGE_TAG\033[0m"
+  - docker build -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG .
+  - docker push $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
+  only:
+  - tags
+
+# 向分支提交时触发构建（master 分支生成 latest 镜像；dev 分支生成 dev 镜像）
+build:
+  stage: build
+  script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  - export DOCKER_IMAGE_NAME=$CI_REGISTRY/${CI_PROJECT_PATH#*/}
+  - if [ $DOCKER_IMAGE_TAG  == "master" ]; then DOCKER_IMAGE_TAG="latest"; fi
+  - echo $DOCKER_IMAGE_TAG
+  - |
+    echo -e "Image Name: \033[1;35m$DOCKER_IMAGE_NAME\033[0m"
+    echo -e "Image Tag:  \033[1;35m$DOCKER_IMAGE_TAG\033[0m"
+  - docker build -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG .
+  - docker push $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
+  only:
+  - master

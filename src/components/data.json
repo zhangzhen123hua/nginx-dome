@@ -1,0 +1,140 @@
+{
+    "title":"推送服务",
+    "interfaceList":[
+        {"date":"sendMail.callback"},
+        {"date":"sendShortMessagingToUser.callback"},
+        {"date":"sendDing.callback"},
+        {"date":"sendJpushToUser.callback"}
+    ],
+    "interfaceListInfo":[{
+        "sendMail.callback":{
+"interfaceName":"邮件批量发送",
+"version":"1.0",
+"args":[
+            {
+                "codename":"emailes",
+                "name":"邮箱",
+                "type":"list",
+                "required":1,
+                "desc":"<p> 接收邮件的邮箱地址。</p><p>  格式：</p><p>  国内邮箱地址：@邮箱地址，例如*********@qq.com。</p><p>  支持对多个邮箱发送邮件，邮箱之间以英文逗号（,）分隔</p><p>  上限为5个邮箱地址。批量调用相对于单条调用及时性稍有延迟。</p><p> 说明 本接口实际使用支持批量邮箱调用。但测试demo仅支持单个邮箱调用.</p>",
+                "fullMessage":"邮箱不能为空"
+            },
+            {
+                "codename":"title",
+                "name":"标题",
+                "type":"String",
+                "required":1,
+                "desc":"<p> 邮件标题</p>",
+                "fullMessage":"邮箱不能为空"
+            },
+            {
+                "codename":"message",
+                "name":"邮箱内容",
+                "type":"String",
+                "required":1,
+                "desc":"<p> 邮件内容</p>",
+                "fullMessage":"邮件内容不能为空"
+            }
+        ],"utilCode":"<p>public class SendMail {</p><p>public static void main(String[] args) {Map<String, Object> jsonMap =new HashMap();//调用接口所需的参数</p></br><p>List<String> info = new ArrayList<String>();</p><p>info.add(\"*****@dddd.com\");</p><p>&nbsp;&nbsp;jsonMap.put(\"emailes\", info);//邮箱集合</p><p>jsonMap.put(\"title\",\"sssss\");//邮件标题</p><p>jsonMap.put(\"message\",\"fsadads\");//邮件内容</p><p>try {</p><p>String result =</p><p>LeanIotSendUtil.send(\"http://192.168.0.215:9001/interface/apidata \",</p><p>\"test\", \"123456\",</p><p>\"sendMail.callback\", \"\", jsonMap);</p><p>System.out.println(\"result:\"+result);</p><p>} catch (Exception e) {</p><p>e.printStackTrace();</p><p>}</p><p>}</p><p>}</p>"},
+"sendShortMessagingToUser.callback":{
+"interfaceName":"发送短信",
+"version":"1.0",
+"args":[
+            {
+                "codename":"phoneNumber",
+                "name":"接受手机号",
+                "type":"String",
+                "required":1,
+                "desc":"<p>接收短信的手机号码。</p><p>格式：</p><p>国内短信：11位手机号码，例如15951955195。</p><p>国际/港澳台消息：国际区号+号码，例如85200000000。</p><p>支持对多个手机号码发送短信，手机号码之间以英文逗号（,）分隔。上限为1000个手机号码。批量调用</p><p>相对于单条调用及时性稍有延迟。</p><p> 说明 本接口实际使用支持批量短信调用。但测试demo仅支持单个手机号调用.</p>",
+                "fullMessage":"接受手机号不能为空"
+            },
+            {
+                "codename":"alarmPhone",
+                "name":"处理人手机号",
+                "type":"String",
+                "required":1,
+                "desc":"<p> 处理人的短信的手机号码。</p><p>格式：</p><p>国内短信：11位手机号码，例如15951955195。</p><p>国际/港澳台消息：国际区号+号码，例如85200000000。</p><p>支持对多个手机号码发送短信，手机号码之间以英文逗号（,）分隔。上限为1000个手机号码。批量调用</p><p>相对于单条调用及时性稍有延迟。</p><p> 说明 本接口实际使用支持批量短信调用。但测试demo仅支持单个手机号调用.</p>",
+                "fullMessage":"处理人手机号不能为空"
+            },
+            {
+                "codename":"message",
+                "name":"短信内容",
+                "type":"String",
+                "required":1,
+                "desc":"<p> 短信内容</p>",
+                "fullMessage":"短信内容不能为空"
+            }
+        ],"utilCode":"<p>public class SendMail {</p><p>public static void main(String[] args) {Map<String, Object> jsonMap =new HashMap();//调用接口所需的参数</p></br><p>List<String> info = new ArrayList<String>();</p><p>info.add(\"12345678901\");</p><p>&nbsp;&nbsp;jsonMap.put(\"phoneNumber\", info);//接受手机号</p><p>jsonMap.put(\"alarmPhone\",\"12345678901\");//处理人手机号</p><p>jsonMap.put(\"message\",\"fsadads\");//短信内容</p><p>try {</p><p>String result =</p><p>LeanIotSendUtil.send(\"http://192.168.0.215:9001/interface/apidata \",</p><p>\"test\", \"123456\",</p><p>\"sendShortMessagingToUser.callback\", \"\", jsonMap);</p><p>System.out.println(\"result:\"+result);</p><p>} catch (Exception e) {</p><p>e.printStackTrace();</p><p>}</p><p>}</p><p>}</p>"},
+"sendDing.callback":{
+"interfaceName":"钉钉消息推送",
+"version":"1.0",
+"args":[
+            {
+                "codename":"phones",
+                "name":"钉钉手机号",
+                "type":"String",
+                "required":1,
+                "desc":"<p>接收钉钉的手机号码。</p><p>格式：</p><p>国内手机：11位手机号码，例如15951955195。</p><p>国际/港澳台消息：国际区号+号码，例如85200000000。</p><p>支持对多个手机号码发送钉钉，手机号码之间以英文逗号（,）分隔。上限为1000个手机号码。批量调用</p><p>相对于单条调用及时性稍有延迟。</p><p> 说明 本接口实际使用支持批量钉钉调用。但测试demo仅支持单个手机号调用.</p>",
+                "fullMessage":"钉钉手机号不能为空"
+            },
+            {
+                "codename":"title",
+                "name":"钉钉件标题",
+                "type":"String",
+                "required":1,
+                "desc":"<p> 钉钉件标题.</p>",
+                "fullMessage":"处理人手机号不能为空"
+            },
+            {
+                "codename":"message",
+                "name":"钉钉内容",
+                "type":"String",
+                "required":1,
+                "desc":"<p> 钉钉内容</p>",
+                "fullMessage":"钉钉内容不能为空"
+            },
+            {
+                "codename":"tagId",
+                "name":"群组",
+                "type":"String",
+                "required":1,
+                "desc":"<p> 群组</p>",
+                "fullMessage":"群组不能为空"
+            },
+            {
+                "codename":"isAtAll",
+                "name":"是否群发",
+                "type":"boolean",
+                "required":1,
+                "desc":"<p> 是否群发</p>",
+                "fullMessage":"是否群发不能为空"
+            }
+        ],"utilCode":"<p>public class SendMail {</p><p>public static void main(String[] args) {Map<String, Object> jsonMap =new HashMap();//调用接口所需的参数</p></br><p>List<String> info = new ArrayList<String>();</p><p>info.add(\"12345678901\");</p><p>&nbsp;&nbsp;jsonMap.put(\"phones\", info);//钉钉手机号</p><p>jsonMap.put(\"title\",\"报警消息\");//钉钉件标题</p><p>jsonMap.put(\"message\",\"XX服务监测不到心跳，请查收\");//钉钉内容</p><p>jsonMap.put(\"tagId\",\"141\");//群组</p><p>try {</p><p>String result =</p><p>LeanIotSendUtil.send(\"http://192.168.0.215:9001/interface/apidata \",</p><p>\"test\", \"123456\",</p><p>\"sendMail.callback\", \"\", jsonMap);</p><p>System.out.println(\"result:\"+result);</p><p>} catch (Exception e) {</p><p>e.printStackTrace();</p><p>}</p><p>}</p><p>}</p>"},
+        "sendJpushToUser.callback": {
+        "interfaceName": "极光推送",
+        "version": "1.0",
+        "args": [
+          {
+            "codename": "phoneNumber",
+            "name": "手机号",
+            "type": "String",
+            "required": 1,
+            "desc": "<p>接收短信的手机号码。</p><p>格式：</p><p>国内短信：11位手机号码，例如15951955195。</p><p>国际/港澳台消息：国际区号+号码，例如85200000000。</p><p>支持对多个手机号码发送短信，手机号码之间以英文逗号（,）分隔。上限为1000个手机号码。</p>批量调用相对于单条调用及时性稍有延迟。</p><p>验证码类型短信，建议使用单独发送的方式。</p>",
+            "fullMessage": "手机号不能为空"
+          },
+          {
+            "codename": "message",
+            "name": "推送内容",
+            "type": "String",
+            "required": 1,
+            "desc": "<p> 推送内容</p>",
+            "fullMessage": "推送内容不能为空"
+          }
+        ],
+        "utilCode": ""
+      }    
+    }], 
+    "interfaceUrl":"http://192.168.1.95:9008/interface/apidata",
+"app_key":"test",
+"secret":"123456"
+}

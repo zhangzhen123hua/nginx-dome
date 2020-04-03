@@ -28,6 +28,8 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # 2. 将 nginx.conf 放置到正确位置
 COPY nginx.conf /etc/nginx/conf.d/default.conf.template
 
+# 3. 声明 ENV，这里写清楚 nginx.conf 中所有要配的环境变量，并给出默认值（通常是开发环境的服务地址）。
+ENV BACKEND_PROXY=http://127.0.0.1:80
 
 EXPOSE 80
 

@@ -85,163 +85,161 @@
 </template>
 
 <script>
-import{fromByLevel}from './http'
+import { fromByLevel } from './http'
 export default {
-   data(){
-     return{
-      inputData:null,
-      showHeader:false,
-      tableData:[],
-      formData:[],
-      position:'top',
-      debResult:'',
-      liftData:'',
+  data () {
+    return {
+      inputData: null,
+      showHeader: false,
+      tableData: [],
+      formData: [],
+      position: 'top',
+      debResult: '',
+      liftData: '',
       validateForm: {
-        domains:[]
+        domains: []
       }
-     }
-   },
-   mounted(){
-     this.gitTableData();
-   },
-   methods:{
-    gitTableData(){
-      //列表数据
-      return (this.tableData=[
-        { 
-          key:0,
-          date: 'sendMail.callback',
+    }
+  },
+  mounted () {
+    this.gitTableData()
+  },
+  methods: {
+    gitTableData () {
+      // 列表数据
+      return (this.tableData = [
+        {
+          key: 0,
+          date: 'sendMail.callback'
         },
         {
-          key:1,
-          date: 'sendShortMessagingToUser.callback',
+          key: 1,
+          date: 'sendShortMessagingToUser.callback'
         },
         {
-          key:2,
-          date: 'sendDing.callback',
+          key: 2,
+          date: 'sendDing.callback'
         },
         {
-          key:3,
-          date:'sendJpushToUser.callback'
+          key: 3,
+          date: 'sendJpushToUser.callback'
         }
-        ])
+      ])
     },
-    goSearch(){
-      if(this.inputData){
-        //去搜索
-        console.log(this.inputData);
-        //响应成功后
-        this.inputData=null;
+    goSearch () {
+      if (this.inputData) {
+        // 去搜索
+        console.log(this.inputData)
+        // 响应成功后
+        this.inputData = null
       }
-     
     },
-    goRow(f){
-      const result =[
-      //邮箱  
-      {
-        key:0,
-        domains:[
+    goRow (f) {
+      const result = [
+      // 邮箱
         {
-          value: '',
-          key:0,
-          name:'emailes'
-        },{
-          value: '',
-          key:1,
-          name:'title'
-        },{
-          value: '',
-          key:2,
-          name:'message'
-        }]
-      },
-      //短信
-        {
-          key:1,
-          domains:[
+          key: 0,
+          domains: [
             {
               value: '',
-              key:0,
-              name:'phoneNumber'
-            },{
+              key: 0,
+              name: 'emailes'
+            }, {
               value: '',
-              key:1,
-              name:'alarmPhone'
-            },{
+              key: 1,
+              name: 'title'
+            }, {
               value: '',
-              key:2,
-              name:'message'
+              key: 2,
+              name: 'message'
+            }]
+        },
+        // 短信
+        {
+          key: 1,
+          domains: [
+            {
+              value: '',
+              key: 0,
+              name: 'phoneNumber'
+            }, {
+              value: '',
+              key: 1,
+              name: 'alarmPhone'
+            }, {
+              value: '',
+              key: 2,
+              name: 'message'
             }
           ]
         },
-       //钉钉
+        // 钉钉
         {
-          key:2,
-          domains:[
+          key: 2,
+          domains: [
             {
               value: '',
-              key:0,
-              name:'phones'
-            },{
+              key: 0,
+              name: 'phones'
+            }, {
               value: '',
-              key:1,
-              name:'title'
-            },{
+              key: 1,
+              name: 'title'
+            }, {
               value: '',
-              key:2,
-              name:'message'
-            },{
+              key: 2,
+              name: 'message'
+            }, {
               value: '',
-              key:3,
-              name:'tagId'
-            },{
+              key: 3,
+              name: 'tagId'
+            }, {
               value: '',
-              key:4,
-              name:'isAtAll'
+              key: 4,
+              name: 'isAtAll'
             }
           ]
         },
-        //极光
+        // 极光
         {
-          key:3,
-          domains:[
+          key: 3,
+          domains: [
             {
               value: '',
-              key:0,
-              name:'phoneNumber'
-            },{
+              key: 0,
+              name: 'phoneNumber'
+            }, {
               value: '',
-              key:1,
-              name:'message'
+              key: 1,
+              name: 'message'
             }
           ]
         }
-      ];
-      result.forEach((item)=>{
-        if(f.key===item.key){
-          this.validateForm.domains=item.domains
+      ]
+      result.forEach((item) => {
+        if (f.key === item.key) {
+          this.validateForm.domains = item.domains
         }
       })
-      this.liftData=f.date
-      
+      this.liftData = f.date
     },
-    submitForm(formName) {
+    submitForm (formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          const params={};
-          this.validateForm.domains.forEach((item)=>{
-             params[item.name]=item.value
+          const params = {}
+          this.validateForm.domains.forEach((item) => {
+            params[item.name] = item.value
           })
-          let res = await fromByLevel( this.liftData,params )
+          let res = await fromByLevel(this.liftData, params)
           this.debResult = res.data
         } else {
-          console.log('error submit!!');
-          return false;
+          console.log('error submit!!')
+          return false
         }
-      });
+      })
     }
   }
- 
+
 }
 </script>
 

@@ -108,7 +108,17 @@ export default {
         {
           key: 3,
           date: 'sendJpushToUser.callback',
-          code: `<p>public class SendMail {</p><p>public static void main(String[] args) {Map<String, Object> jsonMap =new HashMap();//调用接口所需的参数</p></br><p>List<String> info = new ArrayList<String>();</p><p>info.add(\"12345678901\");</p><p>&nbsp;&nbsp;jsonMap.put(\"phones\", info);//钉钉手机号</p><p>jsonMap.put(\"title\",\"报警消息\");//钉钉件标题</p><p>jsonMap.put(\"message\",\"XX服务监测不到心跳，请查收\");//钉钉内容</p><p>jsonMap.put(\"tagId\",\"141\");//群组</p><p>try {</p><p>String result =</p><p>LeanIotSendUtil.send(\"http://192.168.0.215:9001/interface/apidata \",</p><p>\"test\", \"123456\",</p><p>\"sendMail.callback\", \"\", jsonMap);</p><p>System.out.println(\"result:\"+result);</p><p>} catch (Exception e) {</p><p>e.printStackTrace();</p><p>}</p><p>}</p><p>}</p>`
+          code: `<p>jsonMap.put("phoneNumber","13501347261");//手机号</p>
+                <p>jsonMap.put("message","内容");//内容</p>
+                <p>jsonMap.put("message","内容");//内容</p>
+                <p>try {</p>
+                <p> String result =  LeanIotSendUtil.send("http://192.168.1.95:9008/interface/apidata ",</p>
+                <p>"test", "123456",</p>
+                <p>"sendJpushToUser.callback", "1.0", jsonMap);</p>
+                <p>System.out.println("result:"+result);</p>
+                <p>} catch (Exception e) {</p>
+                <p>e.printStackTrace();</p>
+                <p>}</p>`
         }
       ])
     },

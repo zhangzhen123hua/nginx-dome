@@ -88,8 +88,8 @@ export default {
      this.goRow(0)
    },
   methods: {
+    // 获取表格数据
     gitTableData () {
-      // 列表数据
       return (this.tableData = [
         {
           key: 0,
@@ -122,6 +122,7 @@ export default {
         }
       ])
     },
+    // 搜索功能
     goSearch () {
       if (this.inputData) {
         // 去搜索
@@ -130,6 +131,7 @@ export default {
         this.inputData = null
       }
     },
+    //点击行
     goRow (f) {
       const result = [
         {
@@ -225,6 +227,7 @@ export default {
       })
       this.liftData = f.date
     },
+    //发起调用功能
     submitForm (formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {

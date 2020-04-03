@@ -55,12 +55,17 @@
       <el-col :span="14" style="height:100%">
         <div class="right_content">
           <el-tabs type="border-card">
-            <el-tab-pane label="示例代码">
+            <el-tab-pane label="参数说明">
               <div class="dome">
                 <iframe  width="100%" height="100%"  :src="'./../../'+iframeUrl+'.html'" frameborder="0"></iframe>
               </div>
             </el-tab-pane>
             <el-tab-pane label="调试结果"><div v-html="debResult"></div></el-tab-pane>
+            <el-tab-pane label="使用说明">
+              <div>
+                <iframe  width="100%" height="100%"  :src="'./../../'+instructions+'.html'" frameborder="0"></iframe>
+              </div>
+            </el-tab-pane>
           </el-tabs>
         </div>
       </el-col>
@@ -78,8 +83,8 @@ export default {
       showHeader:false,
       tableData:[],
       formData:[],
-      position:'top',
       debResult:'',
+      instructions:'',
       liftData:'',
       bigTitle:'',
       validateForm: {
@@ -92,34 +97,39 @@ export default {
    },
    mounted(){
      this.gitTableData();
-     this.goRow(0);
+     this.goRow(0);//页面初始化
    },
    methods:{
+     //获取表格数据
     gitTableData(){
-      //列表数据
       return (this.tableData=[
         { 
           key:0,
           date: 'sendMail.callback',
-          htmlName:'sendMail'
+          htmlName:'sendMail',//参数说明
+          describe:'help' //使用说明
         },
         {
           key:1,
           date: 'sendShortMessagingToUser.callback',
-          htmlName:'sortMessage'
+          htmlName:'sortMessage',
+          describe:'help'
         },
         {
           key:2,
           date: 'sendDing.callback',
-          htmlName:'ding'
+          htmlName:'ding',
+          describe:'help'
         },
         {
           key:3,
           date:'sendJpushToUser.callback',
-          htmlName:'help'
+          htmlName:'jpush',
+          describe:'jpushHelp'
         }
         ])
     },
+    //搜索功能
     goSearch(){
       if(this.inputData){
         //去搜索
@@ -127,8 +137,8 @@ export default {
         //响应成功后
         this.inputData=null;
       }
-     
     },
+    //点击当前行
     goRow(f){
       const result =[
       //邮箱  
@@ -214,20 +224,23 @@ export default {
       if(f===0){
         this.validateForm.domains=result[0].domains;
         this.bigTitle=this.tableData[0].date;
-        this.iframeUrl=this.tableData[0].htmlName;
         this.currentKey=this.tableData[0].key;
+        this.iframeUrl=this.tableData[0].htmlName;
+        this.instructions=this.tableData[0].describe;
       }
       result.forEach((item)=>{
         if(f.key===item.key){
           this.validateForm.domains=item.domains;
           this.bigTitle=f.date;
-          this.iframeUrl=f.htmlName;
           this.currentKey=f.key
+          this.iframeUrl=f.htmlName;
+          this.instructions=f.describe;
         }
       })
       this.liftData=f.date
       
     },
+    //发起调用功能
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {

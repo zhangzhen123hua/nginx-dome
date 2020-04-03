@@ -11,6 +11,8 @@
           <el-table
             :data="tableData"
             :show-header="showHeader"
+            :highlight-current-row="currentHighLight"
+            :current-row-key="currentKey"
             @row-click="goRow($event)"
            >
             <el-table-column
@@ -22,42 +24,43 @@
       </el-col>
       <el-col :span="5" style="height:100%">
         <div class="mid_content">
-          <div class="mid_content_top">发送邮件消息</div>
+          <div class="mid_content_top" v-text="bigTitle" ></div>
           <el-divider></el-divider>
           <div class="mid_content_bot">
-            <el-form :label-position="position" :model="dynamicValidateForm" ref="dynamicValidateForm" label-width="100px" class="demo-dynamic">
-                <!-- <el-form-item
-                  v-for="(domain, index) in dynamicValidateForm.domains"
-                  :label="domain.name"
+             <!-- <el-popover
+              placement="right-end"
+              width="400"
+              trigger="hover"
+              content="国内邮箱地址：@邮箱地址，例如*********@qq.com。
+支持对多个邮箱发送邮件，邮箱之间以英文逗号（,）分隔。上限为5个邮箱地址。批量调用相对于单条调用及时性稍有延迟。
+说明 本接口实际使用支持批量邮箱调用。但测试demo仅支持单个邮箱调用">
+               <i class="el-icon-question" slot="reference"></i>
+            </el-popover> -->
+            <el-form label-position="top" :model="validateForm" ref="formDom"  class="demo-dynamic">
+                <el-form-item
+                  v-for="(item, index) in validateForm.domains"
+                  :label="item.name"
                   :key="index"
                 >
-                <el-input v-model="domain.value" style="width:260px;"></el-input>
-                </el-form-item> -->
-                <el-form-item label="邮件地址">
-                  <el-input style="width:260px;" v-model="valueOne"></el-input>
-                </el-form-item>
-
-                <el-form-item label="邮件标题">
-                  <el-input style="width:260px;" v-model="valueTwo"></el-input>
-                </el-form-item>
-
-                <el-form-item label="邮件内容">
-                  <el-input style="width:260px;" v-model="valueThree"></el-input>
+                <el-input v-model="item.value" style="width:260px;"></el-input>
                 </el-form-item>
                 <el-form-item>
-                  <el-button  @click="submitForm('dynamicValidateForm')" class="btn" type="primary" >发起调用</el-button>
+                  <el-button  @click="submitForm('formDom')" class="btn" type="primary" >发起调用</el-button>
                 </el-form-item>
             </el-form>
+           
           </div>
         </div>
       </el-col>
       <el-col :span="14" style="height:100%">
         <div class="right_content">
           <el-tabs type="border-card">
-            <el-tab-pane label="Example Code">
-              <div v-text="exaCode"></div>
+            <el-tab-pane label="示例代码">
+              <div class="dome">
+                <iframe  width="100%" height="100%"  :src="'./../../'+iframeUrl+'.html'" frameborder="0"></iframe>
+              </div>
             </el-tab-pane>
-            <el-tab-pane label="Debugging Result"><div v-html="debResult"></div></el-tab-pane>
+            <el-tab-pane label="调试结果"><div v-html="debResult"></div></el-tab-pane>
           </el-tabs>
         </div>
       </el-col>
@@ -67,53 +70,53 @@
 </template>
 
 <script>
-import{fromByLevel}from './http'
+import{fromByLevel}from './http';
 export default {
    data(){
      return{
-       inputData:null,
-       showHeader:false,
-       tableData:[],
-       formData:[],
-       position:'top',
-       debResult:'',
-       exaCode:'',
-       valueOne:'',
-       valueTwo:'',
-       valueThree:'',
-        dynamicValidateForm: {
-          domains: [
-          {
-            value: '',
-            key:0,
-            name:'邮件地址'
-          },{
-            value: '',
-            key:1,
-            name:'邮件标题'
-          },{
-            value: '',
-            key:2,
-            name:'邮件内容'
-          },
-          ]
-        }
+      inputData:null,
+      showHeader:false,
+      tableData:[],
+      formData:[],
+      position:'top',
+      debResult:'',
+      liftData:'',
+      bigTitle:'',
+      validateForm: {
+        domains:[]
+      },
+      iframeUrl:'',
+      currentKey:'',
+      currentHighLight:true
      }
    },
    mounted(){
      this.gitTableData();
-     this.gitHtml();
+     this.goRow(0);
    },
    methods:{
     gitTableData(){
+      //列表数据
       return (this.tableData=[
         { 
-          id:0,
-          date: '发送邮件消息',
+          key:0,
+          date: 'sendMail.callback',
+          htmlName:'sendMail'
         },
         {
-           id:1,
-          date: '发送邮件消息',
+          key:1,
+          date: 'sendShortMessagingToUser.callback',
+          htmlName:'sortMessage'
+        },
+        {
+          key:2,
+          date: 'sendDing.callback',
+          htmlName:'ding'
+        },
+        {
+          key:3,
+          date:'sendJpushToUser.callback',
+          htmlName:'help'
         }
         ])
     },
@@ -127,40 +130,118 @@ export default {
      
     },
     goRow(f){
-      console.log(f.id)
+      const result =[
+      //邮箱  
+      {
+        key:0,
+        domains:[
+        {
+          value: '',
+          key:0,
+          name:'邮箱'
+        },{
+          value: '',
+          key:1,
+          name:'标题'
+        },{
+          value: '',
+          key:2,
+          name:'邮箱内容'
+        }]
+      },
+      //短信
+        {
+          key:1,
+          domains:[
+            {
+              value: '',
+              key:0,
+              name:'接受手机号'
+            },{
+              value: '',
+              key:1,
+              name:'处理人手机号'
+            },{
+              value: '',
+              key:2,
+              name:'短信内容'
+            }
+          ]
+        },
+       //钉钉
+        {
+          key:2,
+          domains:[
+            {
+              value: '',
+              key:0,
+              name:'钉钉手机号'
+            },{
+              value: '',
+              key:1,
+              name:'钉钉件标题'
+            },{
+              value: '',
+              key:2,
+              name:'钉钉内容'
+            },{
+              value: '',
+              key:3,
+              name:'群组'
+            },{
+              value: '',
+              key:4,
+              name:'是否群发'
+            }
+          ]
+        },
+        //极光
+        {
+          key:3,
+          domains:[
+            {
+              value: '',
+              key:0,
+              name:'手机号'
+            },{
+              value: '',
+              key:1,
+              name:'推送内容'
+            }
+          ]
+        }
+      ];
+      if(f===0){
+        this.validateForm.domains=result[0].domains;
+        this.bigTitle=this.tableData[0].date;
+        this.iframeUrl=this.tableData[0].htmlName;
+        this.currentKey=this.tableData[0].key;
+      }
+      result.forEach((item)=>{
+        if(f.key===item.key){
+          this.validateForm.domains=item.domains;
+          this.bigTitle=f.date;
+          this.iframeUrl=f.htmlName;
+          this.currentKey=f.key
+        }
+      })
+      this.liftData=f.date
+      
     },
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          let params ={
-            emailes:[
-              this.valueOne
-              ],
-            title:this.valueTwo,
-            message:this.valueThree
-          }
-          let res = await fromByLevel(params)
+          const params={};
+          this.validateForm.domains.forEach((item)=>{
+             params[item.name]=item.value
+          })
+          let res = await fromByLevel( this.liftData,params )
           this.debResult = res.data
-          // this.dynamicValidateForm.domains.forEach((item)=>{
-          //     this.formData.push(item.value)
-          // });
-          // if(this.formData){
-          //   console.log( this.formData);
-          // }else{
-            
-          // }
-          
         } else {
           console.log('error submit!!');
           return false;
         }
       });
-    },
-    gitHtml(){
-      this.exaCode =`接收邮件的邮箱地址。
-格式：国内邮箱地址：@邮箱地址，例如*********@qq.com。
-支持对多个邮箱发送邮件，邮箱之间以英文逗号（,）分隔。上限为5个邮箱地址。批量调用相对于单条调用及时性稍有延迟。
-说明 本接口实际使用支持批量邮箱调用。但测试demo仅支持单个邮箱调用`
     }
   }
  
@@ -193,6 +274,7 @@ background-color: #fff;
   position: absolute;
   top: 16px;
   left: 80px;
+  font-size: 20px;
 }
 .left_input{
   width: 70%;
@@ -206,6 +288,9 @@ background-color: #fff;
 }
 .content /deep/ .lift_content td{
   background-color: #eee;
+}
+.content /deep/ .lift_content .current-row td{
+  background-color: #ecf5ff;
 }
 .content /deep/ .el-form--label-top .el-form-item__label{
   padding: 0;
@@ -235,6 +320,20 @@ background-color: #fff;
 }
 .mid_content_bot{
   margin-left: 20px;
+  position: relative;
+}
+.el-icon-question{
+   position: absolute;
+  top: 13px;
+  left: 57px;
+}
+/* .content /deep/ span{
+  position: absolute;
+  top: 10px;
+  left: 57px;
+} */
+.dome p{
+  text-align: center;
 }
 
 

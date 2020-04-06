@@ -11,9 +11,7 @@
           <el-table
             :data="tableData"
             :show-header="showHeader"
-            :highlight-current-row="currentHighLight"
-            :current-row-key="currentKey"
-            @row-click="goRow($event)"
+            @row-click="goClickRow($event)"
            >
             <el-table-column
               prop="date"
@@ -27,25 +25,20 @@
           <div class="mid_content_top" v-text="bigTitle" ></div>
           <el-divider></el-divider>
           <div class="mid_content_bot">
-             <!-- <el-popover
-              placement="right-end"
-              width="400"
-              trigger="hover"
-              content="国内邮箱地址：@邮箱地址，例如*********@qq.com。
-支持对多个邮箱发送邮件，邮箱之间以英文逗号（,）分隔。上限为5个邮箱地址。批量调用相对于单条调用及时性稍有延迟。
-说明 本接口实际使用支持批量邮箱调用。但测试demo仅支持单个邮箱调用">
-               <i class="el-icon-question" slot="reference"></i>
-            </el-popover> -->
             <el-form label-position="top" :model="validateForm" ref="formDom"  class="demo-dynamic">
                 <el-form-item
                   v-for="(item, index) in validateForm.domains"
                   :label="item.name"
                   :key="index"
+                  :prop="'domains.' + index + '.value'"
+                    :rules="{
+                    required: item.required ? true : false, message: item.fullMessage, trigger: 'blur'
+                  }"
                 >
                 <el-input v-model="item.value" style="width:260px;"></el-input>
                 </el-form-item>
                 <el-form-item>
-                  <el-button  @click="submitForm('formDom')" class="btn" type="primary" >发起调用</el-button>
+                  <el-button  @click="submitForm()" class="btn" type="primary" >发起调用</el-button>
                 </el-form-item>
             </el-form>
            
@@ -60,7 +53,7 @@
                 <iframe  width="100%" height="100%"  :src="'./../../'+iframeUrl+'.html'" frameborder="0"></iframe>
               </div>
             </el-tab-pane>
-            <el-tab-pane label="调试结果"><div v-html="debResult"></div></el-tab-pane>
+            <el-tab-pane label="调试结果"><div v-html="debugResult"></div></el-tab-pane>
             <el-tab-pane label="使用说明">
               <div>
                 <iframe  width="100%" height="100%"  :src="'./../../'+instructions+'.html'" frameborder="0"></iframe>
@@ -75,60 +68,30 @@
 </template>
 
 <script>
-import{fromByLevel}from './http';
+import{fromByLevel}from './http'
+const jsonData = require('./data.json')
 export default {
    data(){
      return{
-      inputData:null,
+      inputData:'',
       showHeader:false,
       tableData:[],
       formData:[],
-      debResult:'',
-      instructions:'',
-      liftData:'',
-      bigTitle:'',
+      debugResult:'', //调用结果
+      iframeUrl:'',  //参数说明 
+      instructions:'', // 使用说明
+      bigTitle:'', //标题
       validateForm: {
-        domains:[]
-      },
-      iframeUrl:'',
-      currentKey:'',
-      currentHighLight:true
+        domains:[],
+      }
      }
    },
    mounted(){
-     this.gitTableData();
-     this.goRow(0);//页面初始化
+    this.tableData=jsonData.interfaceList; //获取表格数据
+    this.formData =jsonData.interfaceListInfo; //获取表单数据
+    this.goClickRow(0);//页面初始化
    },
    methods:{
-     //获取表格数据
-    gitTableData(){
-      return (this.tableData=[
-        { 
-          key:0,
-          date: 'sendMail.callback',
-          htmlName:'sendMail',//参数说明
-          describe:'help' //使用说明
-        },
-        {
-          key:1,
-          date: 'sendShortMessagingToUser.callback',
-          htmlName:'sortMessage',
-          describe:'help'
-        },
-        {
-          key:2,
-          date: 'sendDing.callback',
-          htmlName:'ding',
-          describe:'help'
-        },
-        {
-          key:3,
-          date:'sendJpushToUser.callback',
-          htmlName:'jpush',
-          describe:'jpushHelp'
-        }
-        ])
-    },
     //搜索功能
     goSearch(){
       if(this.inputData){
@@ -138,122 +101,38 @@ export default {
         this.inputData=null;
       }
     },
-    //点击当前行
-    goRow(f){
-      const result =[
-      //邮箱  
-      {
-        key:0,
-        domains:[
-        {
-          value: '',
-          key:0,
-          name:'邮箱'
-        },{
-          value: '',
-          key:1,
-          name:'标题'
-        },{
-          value: '',
-          key:2,
-          name:'邮箱内容'
-        }]
-      },
-      //短信
-        {
-          key:1,
-          domains:[
-            {
-              value: '',
-              key:0,
-              name:'接受手机号'
-            },{
-              value: '',
-              key:1,
-              name:'处理人手机号'
-            },{
-              value: '',
-              key:2,
-              name:'短信内容'
-            }
-          ]
-        },
-       //钉钉
-        {
-          key:2,
-          domains:[
-            {
-              value: '',
-              key:0,
-              name:'钉钉手机号'
-            },{
-              value: '',
-              key:1,
-              name:'钉钉件标题'
-            },{
-              value: '',
-              key:2,
-              name:'钉钉内容'
-            },{
-              value: '',
-              key:3,
-              name:'群组'
-            },{
-              value: '',
-              key:4,
-              name:'是否群发'
-            }
-          ]
-        },
-        //极光
-        {
-          key:3,
-          domains:[
-            {
-              value: '',
-              key:0,
-              name:'手机号'
-            },{
-              value: '',
-              key:1,
-              name:'推送内容'
-            }
-          ]
-        }
-      ];
-      if(f===0){
-        this.validateForm.domains=result[0].domains;
-        this.bigTitle=this.tableData[0].date;
-        this.currentKey=this.tableData[0].key;
-        this.iframeUrl=this.tableData[0].htmlName;
-        this.instructions=this.tableData[0].describe;
+    //点击行
+    goClickRow(f){
+      this.$refs.formDom.resetFields(); //重置表单和验证
+      if(f===0){ //页面初始化默认选中第一项
+        this.validateForm.domains=this.formData[0].args; // 表单项
+        this.bigTitle=this.tableData[0].date; //标题和参数1
+        this.iframeUrl=this.tableData[0].htmlName;   //参数说明
+        this.instructions=this.tableData[0].describe; //使用说
       }
-      result.forEach((item)=>{
+      
+      this.formData.forEach((item)=>{
         if(f.key===item.key){
-          this.validateForm.domains=item.domains;
+          this.validateForm.domains=item.args;
           this.bigTitle=f.date;
-          this.currentKey=f.key
           this.iframeUrl=f.htmlName;
           this.instructions=f.describe;
         }
       })
-      this.liftData=f.date
       
     },
     //发起调用功能
-    submitForm(formName) {
-      this.$refs[formName].validate(async (valid) => {
+    submitForm() {
+      this.$refs.formDom.validate(async (valid) => {
         if (valid) {
-          const params={};
+          const params={}; //参数2
           this.validateForm.domains.forEach((item)=>{
              params[item.name]=item.value
           })
-          let res = await fromByLevel( this.liftData,params )
-          this.debResult = res.data
-        } else {
-          console.log('error submit!!');
-          return false;
-        }
+          let {data} = await fromByLevel( this.bigTitle,params )
+          if(data.code !==0) return this.$message.error('调用失败')
+          this.debugResult = data;
+        } 
       });
     }
   }

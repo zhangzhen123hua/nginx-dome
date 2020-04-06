@@ -14,7 +14,7 @@
             <el-button slot="append" type="primary" icon="el-icon-search" @click="goSearch()"></el-button>
           </el-input>
           <el-divider></el-divider>
-          <el-table :data="tableData" :show-header="showHeader" @row-click="goRow($event)">
+          <el-table :data="tableData" :show-header="showHeader" @row-click="goClickRow($event)">
             <el-table-column prop="date"></el-table-column>
           </el-table>
         </div>
@@ -24,25 +24,20 @@
           <div class="mid_content_top" v-text="bigTitle"></div>
           <el-divider></el-divider>
           <div class="mid_content_bot">
-            <!-- <el-popover
-              placement="right-end"
-              width="400"
-              trigger="hover"
-              content="国内邮箱地址：@邮箱地址，例如*********@qq.com。
-支持对多个邮箱发送邮件，邮箱之间以英文逗号（,）分隔。上限为5个邮箱地址。批量调用相对于单条调用及时性稍有延迟。
-说明 本接口实际使用支持批量邮箱调用。但测试demo仅支持单个邮箱调用">
-               <i class="el-icon-question" slot="reference"></i>
-            </el-popover>-->
             <el-form label-position="top" :model="validateForm" ref="formDom" class="demo-dynamic">
               <el-form-item
                 v-for="(item, index) in validateForm.domains"
-                :label="item.name"
+                :label="item.codename"
                 :key="index"
+                :prop="'domains.' + index + '.value'"
+                  :rules="{
+                  required: item.required ? true : false, message: item.fullMessage, trigger: 'blur'
+                }"
               >
                 <el-input v-model="item.value" style="width:260px;"></el-input>
               </el-form-item>
               <el-form-item>
-                <el-button @click="submitForm('formDom')" class="btn" type="primary">发起调用</el-button>
+                <el-button @click="submitForm()" class="btn" type="primary">发起调用</el-button>
               </el-form-item>
             </el-form>
           </div>
@@ -55,7 +50,7 @@
               <div class="dome" v-html="exampleCode"></div>
             </el-tab-pane>
             <el-tab-pane label="Debugging Result">
-              <div v-html="debResult"></div>
+              <div v-html="debugResult"></div>
             </el-tab-pane>
           </el-tabs>
         </div>
@@ -66,62 +61,29 @@
 
 <script>
 import { fromByLevel } from './http'
+const jsonData = require('./data.json')
 export default {
   data () {
     return {
-      inputData: null,
+      inputData: '',
       showHeader: false,
       tableData: [],
       formData: [],
-      position: 'top',
-      debResult: '',
-      liftData: '',
-      bigTitle: '',
-      exampleCode: '',
+      debugResult: '', //调用结果
+      bigTitle: '', //标题
+      exampleCode: '', //示例代码
       validateForm: {
         domains: []
-      }
+      },
     }
   },
   mounted () {
-    this.gitTableData()
-     this.goRow(0)
+    //发请求 
+    this.tableData=jsonData.interfaceList; //获取表格数据
+    this.formData =jsonData.interfaceListInfo; //获取表单数据
+    this.goClickRow(0); //页面初始化
    },
   methods: {
-    // 获取表格数据
-    gitTableData () {
-      return (this.tableData = [
-        {
-          key: 0,
-          date: 'sendMail.callback',
-          code: `<p>public class SendMail {</p><p>public static void main(String[] args) {Map<String, Object> jsonMap =new HashMap();//调用接口所需的参数</p></br><p>List<String> info = new ArrayList<String>();</p><p>info.add(\"*****@dddd.com\");</p><p>&nbsp;&nbsp;jsonMap.put(\"emailes\", info);//邮箱集合</p><p>jsonMap.put(\"title\",\"sssss\");//邮件标题</p><p>jsonMap.put(\"message\",\"fsadads\");//邮件内容</p><p>try {</p><p>String result =</p><p>LeanIotSendUtil.send(\"http://192.168.0.215:9001/interface/apidata \",</p><p>\"test\", \"123456\",</p><p>\"sendMail.callback\", \"\", jsonMap);</p><p>System.out.println(\"result:\"+result);</p><p>} catch (Exception e) {</p><p>e.printStackTrace();</p><p>}</p><p>}</p><p>}</p>`
-        },
-        {
-          key: 1,
-          date: 'sendShortMessagingToUser.callback',
-          code: `<p>public class SendMail {</p><p>public static void main(String[] args) {Map<String, Object> jsonMap =new HashMap();//调用接口所需的参数</p></br><p>List<String> info = new ArrayList<String>();</p><p>info.add(\"12345678901\");</p><p>&nbsp;&nbsp;jsonMap.put(\"phoneNumber\", info);//接受手机号</p><p>jsonMap.put(\"alarmPhone\",\"12345678901\");//处理人手机号</p><p>jsonMap.put(\"message\",\"fsadads\");//短信内容</p><p>try {</p><p>String result =</p><p>LeanIotSendUtil.send(\"http://192.168.0.215:9001/interface/apidata \",</p><p>\"test\", \"123456\",</p><p>\"sendShortMessagingToUser.callback\", \"\", jsonMap);</p><p>System.out.println(\"result:\"+result);</p><p>} catch (Exception e) {</p><p>e.printStackTrace();</p><p>}</p><p>}</p><p>}</p>` },
-        {
-          key: 2,
-          date: 'sendDing.callback',
-          code: `<p>public class SendMail {</p><p>public static void main(String[] args) {Map<String, Object> jsonMap =new HashMap();//调用接口所需的参数</p></br><p>List<String> info = new ArrayList<String>();</p><p>info.add(\"12345678901\");</p><p>&nbsp;&nbsp;jsonMap.put(\"phones\", info);//钉钉手机号</p><p>jsonMap.put(\"title\",\"报警消息\");//钉钉件标题</p><p>jsonMap.put(\"message\",\"XX服务监测不到心跳，请查收\");//钉钉内容</p><p>jsonMap.put(\"tagId\",\"141\");//群组</p><p>try {</p><p>String result =</p><p>LeanIotSendUtil.send(\"http://192.168.0.215:9001/interface/apidata \",</p><p>\"test\", \"123456\",</p><p>\"sendMail.callback\", \"\", jsonMap);</p><p>System.out.println(\"result:\"+result);</p><p>} catch (Exception e) {</p><p>e.printStackTrace();</p><p>}</p><p>}</p><p>}</p>`
-        },
-        {
-          key: 3,
-          date: 'sendJpushToUser.callback',
-          code: `<p>jsonMap.put("phoneNumber","13501347261");//手机号</p>
-                <p>jsonMap.put("message","内容");//内容</p>
-                <p>jsonMap.put("message","内容");//内容</p>
-                <p>try {</p>
-                <p> String result =  LeanIotSendUtil.send("http://192.168.1.95:9008/interface/apidata ",</p>
-                <p>"test", "123456",</p>
-                <p>"sendJpushToUser.callback", "1.0", jsonMap);</p>
-                <p>System.out.println("result:"+result);</p>
-                <p>} catch (Exception e) {</p>
-                <p>e.printStackTrace();</p>
-                <p>}</p>`
-        }
-      ])
-    },
     // 搜索功能
     goSearch () {
       if (this.inputData) {
@@ -132,114 +94,32 @@ export default {
       }
     },
     //点击行
-    goRow (f) {
-      const result = [
-        {
-          // 邮箱
-          key: 0,
-          domains: [{
-            value: '',
-            key: 0,
-            name: 'emailes'
-          }, {
-            value: '',
-            key: 1,
-            name: 'title'
-          }, {
-            value: '',
-            key: 2,
-            name: 'message'
-          }]
-        },
-        // 短信
-        {
-          key: 1,
-          domains: [
-            {
-              value: '',
-              key: 0,
-              name: 'phoneNumber'
-            }, {
-              value: '',
-              key: 1,
-              name: 'alarmPhone'
-            }, {
-              value: '',
-              key: 2,
-              name: 'message'
-            }
-          ]
-        },
-        // 钉钉
-        {
-          key: 2,
-          domains: [
-            {
-              value: '',
-              key: 0,
-              name: 'phones'
-            }, {
-              value: '',
-              key: 1,
-              name: 'title'
-            }, {
-              value: '',
-              key: 2,
-              name: 'message'
-            }, {
-              value: '',
-              key: 3,
-              name: 'tagId'
-            }, {
-              value: '',
-              key: 4,
-              name: 'isAtAll'
-            }
-          ]
-        },
-        // 极光
-        {
-          key: 3,
-          domains: [
-            {
-              value: '',
-              key: 0,
-              name: 'phoneNumber'
-            }, {
-              value: '',
-              key: 1,
-              name: 'message'
-            }
-          ]
-        }
-      ]
-      if (f === 0) {
-        this.validateForm.domains = result[0].domains
-        this.bigTitle = this.tableData[0].date
-        this.exampleCode = this.tableData[0].code
+    goClickRow (f) {
+       this.$refs.formDom.resetFields(); //重置表单和验证
+      if (f === 0) { //页面初始化默认选中第一项
+        this.validateForm.domains = this.formData[0].args; // 表单项
+        this.bigTitle = this.tableData[0].date; //标题和参数1
+        this.exampleCode = this.tableData[0].utilCode; //示例代码
       }
-      result.forEach((item) => {
+      this.formData.forEach((item) => {
         if (f.key === item.key) {
-          this.validateForm.domains = item.domains
+          this.validateForm.domains = item.args
           this.bigTitle = f.date
-          this.exampleCode = f.code
+          this.exampleCode = f.utilCode
         }
       })
-      this.liftData = f.date
     },
     //发起调用功能
-    submitForm (formName) {
-      this.$refs[formName].validate(async (valid) => {
+    submitForm () {
+      this.$refs.formDom.validate(async (valid) => {
         if (valid) {
-          const params = {}
+          const params = {}; //参数2
           this.validateForm.domains.forEach((item) => {
-            params[item.name] = item.value
+            params[item.codename] = item.value
           })
-          let res = await fromByLevel(this.liftData, params)
-          this.debResult = res.data
-        } else {
-          console.log('error submit!!')
-          return false
+          let {data} = await fromByLevel(this.bigTitle, params)
+          if(data.code !==0)return this.$message.error('调用失败')
+          this.debugResult = data;
         }
       })
     }

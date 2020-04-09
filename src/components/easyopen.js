@@ -43,7 +43,6 @@ export default class EasyOpen {
       timestamp: dayjs().format('YYYY-MM-DD HH:mm:ss'),
       data: encodeURIComponent(JSON.stringify(payload))
     }
-
     // 生成签名
     let paramNameValue = []
     let paramNames = Object.keys(payload).sort()

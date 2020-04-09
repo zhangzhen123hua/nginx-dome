@@ -1,5 +1,18 @@
 <template>
   <div class="content">
+  <!-- 头部区域 -->
+    <el-menu
+      :default-active="activeIndex"
+      class="el-menu-demo"
+      mode="horizontal"
+      @select="handleSelect" 
+      background-color="#545c64"
+      text-color="#fff"
+      active-text-color="#409EFF">
+      <el-menu-item index="1"><a href="../../chanpinmenhu/project/project.html" target="_blank">首页</a></el-menu-item>
+      <el-menu-item v-for="( item, index ) in serviceData " :key="index"  :index="index.toString()" v-text="item.cName"></el-menu-item>
+    </el-menu>
+  <!-- 内容区域 -->
     <el-row style="height:100%">
       <el-col :span="5" style="height:100%">
         <div class="lift_content ">
@@ -8,16 +21,11 @@
             <el-button slot="append" type="primary" icon="el-icon-search"  @click="goSearch()"></el-button>
           </el-input>
           <el-divider></el-divider>
-          <el-table
-            :data="tableData"
-            :show-header="showHeader"
-            @row-click="goClickRow($event)"
-           >
-            <el-table-column
-              prop="date"
-             >
-            </el-table-column>
-          </el-table>
+    <!-- 添加tree -->
+          <div class="treeStructure">
+            <el-tree :data="treeData"  node-key="id"  :default-expand-all="true" 
+              ref="tree" :default-checked-keys="[2]"  :props="defaultProps" @node-click="handleNodeClick($event)"></el-tree>
+          </div>
         </div>
       </el-col>
       <el-col :span="5" style="height:100%">
@@ -28,11 +36,11 @@
             <el-form label-position="top" :model="validateForm" ref="formDom"  class="demo-dynamic">
                 <el-form-item
                   v-for="(item, index) in validateForm.domains"
-                  :label="item.name"
+                  :label="item.cName"
                   :key="index"
                   :prop="'domains.' + index + '.value'"
-                    :rules="{
-                    required: item.required ? true : false, message: item.fullMessage, trigger: 'blur'
+                  :rules="{
+                  required: item.required ? true : false, message: item.fullMessage, trigger: 'blur'
                   }"
                 >
                 <el-input v-model="item.value" style="width:260px;"></el-input>
@@ -64,34 +72,82 @@
       </el-col>
     </el-row>
   </div>
-  
 </template>
-
 <script>
-import{fromByLevel}from './http'
-const jsonData = require('./data.json')
+import{serviceByLevel, ModelByLevel, formByLevel, formSubmitByLevel}from './http'
 export default {
    data(){
      return{
+      serviceData:'', //服务数据
       inputData:'',
-      showHeader:false,
-      tableData:[],
       formData:[],
       debugResult:'', //调用结果
       iframeUrl:'',  //参数说明 
       instructions:'', // 使用说明
       bigTitle:'', //标题
       validateForm: {
-        domains:[],
+        domains:[]
+      },
+      activeIndex:'2',//默认选中第一项
+      treeData:[],
+      defaultProps: {
+        children: 'children',
+        label: 'label'
       }
      }
    },
    mounted(){
-    this.tableData=jsonData.interfaceList; //获取表格数据
-    this.formData =jsonData.interfaceListInfo; //获取表单数据
-    this.goClickRow(0);//页面初始化
+    this.getServiceData();//初始化服务
+    this.getModelData(); //初始化模块
+    this.handleNodeClick({id:2,label:'sendShortMessagingToUser.callback'}) //初始化选中的tree节点
    },
    methods:{
+     //查询服务
+    async getServiceData(){
+      let {data:{code,data}} = await serviceByLevel();
+      if(code !==0) return this.$message.error('获取服务失败...')
+      this.serviceData=data.items;
+    },
+     //查询模块
+    async getModelData(key){
+      key = key || 2
+      const params={id:key} 
+      let {data:{code,data}} = await ModelByLevel(params);
+      if(code !==0) return this.$message.error('获取服务失败...');
+      var obj ={};
+      obj.id =data.id;
+      obj.label=data.cName;
+      obj.children=[];
+      data.baseFunctionVos.forEach((item)=>{
+        obj.children.push({id:item.id,label:item.eName})
+      })
+      this.treeData.push(obj);
+    },
+     //点击头部导航
+    handleSelect(key){
+      this.getModelData(key);
+    },
+     //点击tree节点
+    async handleNodeClick(e){
+        this.$refs.formDom.resetFields(); //重置表单和验证
+        let {data:{code,data}} = await formByLevel(e);
+        if(code !==0) return this.$message.error('获取服务失败...');
+        if(!e.children){
+          this.bigTitle=e.label;
+          this.validateForm.domains=data.items;
+        }
+        const dome =e.label;
+        switch (dome) {
+          case 'sendShortMessagingToUser.callback':
+            this.iframeUrl='sortMessage'
+            this.instructions='help'
+            break;
+          case 'sendMail.callback':
+            this.iframeUrl='sendMail'
+             this.instructions='jpushHelp'
+            break;
+        }
+    },
     //搜索功能
     goSearch(){
       if(this.inputData){
@@ -101,26 +157,6 @@ export default {
         this.inputData=null;
       }
     },
-    //点击行
-    goClickRow(f){
-      this.$refs.formDom.resetFields(); //重置表单和验证
-      if(f===0){ //页面初始化默认选中第一项
-        this.validateForm.domains=this.formData[0].args; // 表单项
-        this.bigTitle=this.tableData[0].date; //标题和参数1
-        this.iframeUrl=this.tableData[0].htmlName;   //参数说明
-        this.instructions=this.tableData[0].describe; //使用说
-      }
-      
-      this.formData.forEach((item)=>{
-        if(f.key===item.key){
-          this.validateForm.domains=item.args;
-          this.bigTitle=f.date;
-          this.iframeUrl=f.htmlName;
-          this.instructions=f.describe;
-        }
-      })
-      
-    },
     //发起调用功能
     submitForm() {
       this.$refs.formDom.validate(async (valid) => {
@@ -129,8 +165,8 @@ export default {
           this.validateForm.domains.forEach((item)=>{
              params[item.name]=item.value
           })
-          let {data} = await fromByLevel( this.bigTitle,params )
-          if(data.code !==0) return this.$message.error('调用失败')
+          let {data} = await formSubmitByLevel( this.bigTitle,params )
+          if(data.code !==0) return this.$message.error('获取服务失败...')
           this.debugResult = data;
         } 
       });
@@ -212,20 +248,25 @@ background-color: #fff;
 }
 .mid_content_bot{
   margin-left: 20px;
+}
+/* .content  /deep/ .el-form--label-top .el-form-item__label{
   position: relative;
 }
 .el-icon-question{
-   position: absolute;
-  top: 13px;
-  left: 57px;
-}
-/* .content /deep/ span{
   position: absolute;
-  top: 10px;
+  top: 13px;
   left: 57px;
 } */
 .dome p{
   text-align: center;
+}
+/* 头部区域 */
+.content /deep/ .el-menu--horizontal>.el-menu-item a, .el-menu--horizontal>.el-menu-item a:hover{
+  text-decoration: none;
+}
+.content /deep/ .el-tree-node__content{
+  height: 38px;
+  background: #EEEEEE;
 }
 
 

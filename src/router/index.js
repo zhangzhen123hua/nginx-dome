@@ -1,7 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Index from '../components/index.vue'
-import View from '../components/view.vue' 
+import View from '../components/view.vue'
+import Page from '../components/page.vue'
+
 Vue.use(Router)
 export default new Router({
   routes: [
@@ -12,6 +14,10 @@ export default new Router({
     {
       path: '/view',
       component: View
+    },
+    {
+      path: '/page',
+      component: Page
     }
   ]
 })

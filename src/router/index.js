@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Index from '../components/index.vue'
 import View from '../components/view.vue'
 import Page from '../components/page.vue'
+import Details from '../components/components/detailsDialog.vue'
 
 Vue.use(Router)
 export default new Router({
@@ -18,6 +19,11 @@ export default new Router({
     {
       path: '/page',
       component: Page
+    },
+    {
+      path: '/details',
+      component: Details
     }
+
   ]
 })

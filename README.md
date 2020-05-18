@@ -1,24 +1,7 @@
-# xianmu
-
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
+## 配置nginx代理
+```base
+ 1.项目根目录下添加 vue.config.js
+ 2.在api文件中添加 easyopen.js 和http.js文件
 ```
 
-### Compiles and minifies for production
-```
-npm run build
-```
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).

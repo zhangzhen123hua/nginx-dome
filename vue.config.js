@@ -1,11 +1,9 @@
 module.exports = {
   devServer: {
-    proxy:{
+    proxy:{   //配置拦截地址
       '/interface/': {
-        // target: 'http://192.168.1.95:9008',
-        // target: 'http://192.168.0.243:9001',
         target: 'http://192.168.1.102:9001',
-        changeOrigin: true
+        changeOrigin: true   //发送请求头中host会设置成target，默认：false
       }
     }
   }
